@@ -395,14 +395,11 @@ locate content, the latter to retrieve that content.</p>
 store in a varible to later use.</p>
 <pre class="r"><code>base_url &lt;- &quot;https://abacus.library.ubc.ca/api/&quot;</code></pre>
 <p>After loading the base url, we can add on the specific API we intend
-to search. We’ll store these for later use as well.</p>
-<pre class="r"><code>search_api &lt;- &quot;search?q=&quot;
-data_access_api &lt;- &quot;&quot;</code></pre>
+to search.</p>
+<pre class="r"><code>search_api &lt;- &quot;search?q=&quot;</code></pre>
 <p>The <code>Search</code> API requires a <code>query</code> parameter,
 ie, something to search for. This is articulated as a string, folloing
 the <code>?q=</code>.</p>
-<p>The <code>Data Access</code> API requires… (haven’t written anything
-to explore getting the data)</p>
 </div>
 <div id="search-api" class="section level2">
 <h2>Search API</h2>
@@ -418,10 +415,10 @@ already built our <code>base_url</code> and added on the requiste text
 to access the <code>Search</code> API, <code>search_api</code>. We’ll no
 build our query, specifying the query and the file type of interest.</p>
 <pre class="r"><code>search_query &lt;- &quot;title:labour&quot; # retrieve everything with the word labour in the title
-search_type &lt;- &quot;&amp;type=dataset&amp;metadata_fields=Distribution%20Date:*&quot; # limit to datasets</code></pre>
+search_type &lt;- &quot;&amp;type=dataset&quot; # limit to datasets</code></pre>
 <p>We can then paste these together to construct a full query.</p>
 <pre class="r"><code>(search_api_call &lt;- paste0(base_url, search_api, search_query, search_type))</code></pre>
-<pre><code>## [1] &quot;https://abacus.library.ubc.ca/api/search?q=title:labour&amp;type=dataset&amp;metadata_fields=Distribution%20Date:*&quot;</code></pre>
+<pre><code>## [1] &quot;https://abacus.library.ubc.ca/api/search?q=title:labour&amp;type=dataset&quot;</code></pre>
 <p>To get a sense of what this looks like, we can load this query in our
 browser.</p>
 </div>
@@ -442,10 +439,10 @@ a list.</p>
 <pre class="r"><code>str(search_resp)</code></pre>
 <pre><code>## List of 7
 ##  $ method     : chr &quot;GET&quot;
-##  $ url        : chr &quot;https://abacus.library.ubc.ca/api/search?q=title:labour&amp;type=dataset&amp;metadata_fields=Distribution%20Date:*&quot;
+##  $ url        : chr &quot;https://abacus.library.ubc.ca/api/search?q=title:labour&amp;type=dataset&quot;
 ##  $ status_code: int 200
 ##  $ headers    :List of 8
-##   ..$ Date                        : chr &quot;Tue, 07 Jan 2025 17:44:01 GMT&quot;
+##   ..$ Date                        : chr &quot;Tue, 07 Jan 2025 22:53:39 GMT&quot;
 ##   ..$ Server                      : chr &quot;Apache/2.4.37 (Red Hat Enterprise Linux) OpenSSL/1.1.1k mod_R/1.2.9 R/3.5.0 mod_apreq2-20101207/2.8.1&quot;
 ##   ..$ X-Frame-Options             : chr &quot;SAMEORIGIN&quot;
 ##   ..$ Access-Control-Allow-Origin : chr &quot;*&quot;
@@ -456,7 +453,7 @@ a list.</p>
 ##   ..- attr(*, &quot;class&quot;)= chr &quot;httr2_headers&quot;
 ##  $ body       : raw [1:24871] 7b 22 73 74 ...
 ##  $ request    :List of 7
-##   ..$ url     : chr &quot;https://abacus.library.ubc.ca/api/search?q=title:labour&amp;type=dataset&amp;metadata_fields=Distribution%20Date:*&quot;
+##   ..$ url     : chr &quot;https://abacus.library.ubc.ca/api/search?q=title:labour&amp;type=dataset&quot;
 ##   ..$ method  : NULL
 ##   ..$ headers : list()
 ##   ..$ body    : NULL
@@ -464,7 +461,7 @@ a list.</p>
 ##   ..$ options : list()
 ##   ..$ policies: list()
 ##   ..- attr(*, &quot;class&quot;)= chr &quot;httr2_request&quot;
-##  $ cache      :&lt;environment: 0x1065187c8&gt; 
+##  $ cache      :&lt;environment: 0x107773ea0&gt; 
 ##  - attr(*, &quot;class&quot;)= chr &quot;httr2_response&quot;</code></pre>
 <p>What wer’re most interested in here is the <code>body</code>.
 However, the <code>body</code> is sent to us in raw bytes. This is
@@ -545,11 +542,11 @@ the server in a loop. For now, let’s look at the 26 items in there.</p>
 <p>We don’t need all this data. We should be able to do some evaluation
 with the <code>name</code>, <code>description</code>,
 <code>fileCount</code>, <code>producers</code>,
-<code>published_at</code> and, for later retrieval, <code>url</code>.
-Let’s look at these quickly, noting importantly, that
-<code>producers</code> is another list, that we’ll need to wrangle some
-how.</p>
-<pre class="r"><code>vars_of_interest &lt;- c(&quot;name&quot;, &quot;description&quot;, &quot;fileCount&quot;, &quot;producers&quot;, &quot;published_at&quot;, &quot;url&quot;)
+<code>published_at</code>, <code>url</code>, and, for later retrieval,
+<code>global_id</code>. Let’s look at these quickly, noting importantly,
+that <code>producers</code> is another list, that we’ll need to wrangle
+some how.</p>
+<pre class="r"><code>vars_of_interest &lt;- c(&quot;name&quot;, &quot;description&quot;, &quot;fileCount&quot;, &quot;producers&quot;, &quot;published_at&quot;, &quot;url&quot;, &quot;global_id&quot;)
 lapply(search_data$items[vars_of_interest], class)</code></pre>
 <pre><code>## $name
 ## [1] &quot;character&quot;
@@ -567,6 +564,9 @@ lapply(search_data$items[vars_of_interest], class)</code></pre>
 ## [1] &quot;character&quot;
 ## 
 ## $url
+## [1] &quot;character&quot;
+## 
+## $global_id
 ## [1] &quot;character&quot;</code></pre>
 </div>
 <div id="getting-all-the-data" class="section level2">
@@ -611,6 +611,7 @@ for handling this as well.</li>
   file_count &lt;- vector()
   producers &lt;- list()
   pub_date &lt;- vector()
+  global_id &lt;- vector()
   handle &lt;- vector()
   
   # establish the starting point
@@ -630,7 +631,8 @@ for handling this as well.</li>
     resp_body_file_count &lt;- resp_body$data$items$fileCount # get the file count
     resp_body_producers &lt;- resp_body$data$items$producers # get the producers
     resp_body_handle &lt;- resp_body$data$items$url #get the url
-    resp_body_pubdate &lt;- resp_body$data$items$published_at
+    resp_body_id &lt;- resp_body$data$items$global_id # get id
+    resp_body_pubdate &lt;- resp_body$data$items$published_at # get update date
     # update the place holders:
     name &lt;- c(name, resp_body_name)
     description &lt;- c(description, resp_body_desc)
@@ -638,6 +640,7 @@ for handling this as well.</li>
     producers &lt;- c(producers, resp_body_producers)
     pub_date &lt;- c(pub_date, resp_body_pubdate)
     handle &lt;- c(handle, resp_body_handle)
+    global_id &lt;- c(global_id, resp_body_id)
     # update counters
     start_point &lt;- start_point + per_page # increment the start_point
     call_counter &lt;- call_counter + 1 # increment the counter
@@ -649,7 +652,8 @@ for handling this as well.</li>
                 &quot;file_count&quot; = file_count,
                 &quot;producers&quot; = producers,
                 &quot;pub_date&quot; = pub_date,
-                &quot;handle&quot; = handle))
+                &quot;handle&quot; = handle,
+                &quot;id&quot; = global_id))
 }</code></pre>
 <p>We can then call that function.</p>
 <pre class="r"><code>labour &lt;- search_datasets(&quot;title:labour&quot;, 50)</code></pre>
@@ -668,7 +672,8 @@ for handling this as well.</li>
 ## file_count  109    -none- numeric  
 ## producers   109    -none- list     
 ## pub_date    109    -none- character
-## handle      109    -none- character</code></pre>
+## handle      109    -none- character
+## id          109    -none- character</code></pre>
 <p>We can make this a bit easier for ourselves by converting this into a
 dataframe or tibble. There are several ways to approach this,
 considering that <code>producers</code> is a list - it is a list as some
@@ -705,15 +710,15 @@ head(labour$producers, n = 20)</code></pre>
 <p>We can easily convert this to a tibble.</p>
 <pre class="r"><code>labour &lt;- tidyr::as_tibble(labour)
 head(labour)</code></pre>
-<pre><code>## # A tibble: 6 × 6
-##   name                      description     file_count producers pub_date handle
-##   &lt;chr&gt;                     &lt;chr&gt;                &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;    &lt;chr&gt; 
-## 1 Labour Force Survey, 2013 The Labour For…         14 Statisti… 2013-09… https…
-## 2 Labour Force Survey, 2014 The Labour For…         29 Statisti… 2014-01… https…
-## 3 Labour Force Survey, 2023 LFS data are u…         31 Statisti… 2024-01… https…
-## 4 Labour Force Survey, 2006 The Labour For…         26 Statisti… 2023-03… https…
-## 5 Labour Force Survey, 2008 The Labour For…         26 Statisti… 2023-03… https…
-## 6 Labour Force Survey, 2007 The Labour For…         26 Statisti… 2023-03… https…</code></pre>
+<pre><code>## # A tibble: 6 × 7
+##   name                    description file_count producers pub_date handle id   
+##   &lt;chr&gt;                   &lt;chr&gt;            &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;
+## 1 Labour Force Survey, 2… The Labour…         14 Statisti… 2013-09… https… hdl:…
+## 2 Labour Force Survey, 2… The Labour…         29 Statisti… 2014-01… https… hdl:…
+## 3 Labour Force Survey, 2… LFS data a…         31 Statisti… 2024-01… https… hdl:…
+## 4 Labour Force Survey, 2… The Labour…         26 Statisti… 2023-03… https… hdl:…
+## 5 Labour Force Survey, 2… The Labour…         26 Statisti… 2023-03… https… hdl:…
+## 6 Labour Force Survey, 2… The Labour…         26 Statisti… 2023-03… https… hdl:…</code></pre>
 </div>
 <div id="explore" class="section level2">
 <h2>Explore</h2>
@@ -756,15 +761,55 @@ modified names (Labour Force Survey, Labour Force Survey (Rebased,
 Revised), etc)</p>
 <pre class="r"><code>lfs &lt;- labour[grepl(&quot;^Labour Force Survey&quot;, labour$name_no_year),]
 head(lfs)</code></pre>
-<pre><code>## # A tibble: 6 × 8
-##   name       description file_count producers pub_date handle year  name_no_year
-##   &lt;chr&gt;      &lt;chr&gt;            &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt;       
-## 1 Labour Fo… The Labour…         14 Statisti… 2013-09… https… 2013  Labour Forc…
-## 2 Labour Fo… The Labour…         29 Statisti… 2014-01… https… 2014  Labour Forc…
-## 3 Labour Fo… LFS data a…         31 Statisti… 2024-01… https… 2023  Labour Forc…
-## 4 Labour Fo… The Labour…         26 Statisti… 2023-03… https… 2006  Labour Forc…
-## 5 Labour Fo… The Labour…         26 Statisti… 2023-03… https… 2008  Labour Forc…
-## 6 Labour Fo… The Labour…         26 Statisti… 2023-03… https… 2007  Labour Forc…</code></pre>
+<pre><code>## # A tibble: 6 × 9
+##   name              description file_count producers pub_date handle id    year 
+##   &lt;chr&gt;             &lt;chr&gt;            &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt;
+## 1 Labour Force Sur… The Labour…         14 Statisti… 2013-09… https… hdl:… 2013 
+## 2 Labour Force Sur… The Labour…         29 Statisti… 2014-01… https… hdl:… 2014 
+## 3 Labour Force Sur… LFS data a…         31 Statisti… 2024-01… https… hdl:… 2023 
+## 4 Labour Force Sur… The Labour…         26 Statisti… 2023-03… https… hdl:… 2006 
+## 5 Labour Force Sur… The Labour…         26 Statisti… 2023-03… https… hdl:… 2008 
+## 6 Labour Force Sur… The Labour…         26 Statisti… 2023-03… https… hdl:… 2007 
+## # ℹ 1 more variable: name_no_year &lt;chr&gt;</code></pre>
+</div>
+<div id="looking-at-files" class="section level2">
+<h2>Looking at Files</h2>
+<p>We now know the data sets we’re interested in. A dataset is made up
+of multiple files, however, and we likely don’t want all the files.
+We’ll start by getting the file list for one of our datasets.</p>
+<p>Up until now, we’ve been using the <code>search</code> api. We’ll now
+use the <code>datasets</code> api.</p>
+<pre class="r"><code>data_access_api &lt;- &quot;datasets/&quot;</code></pre>
+<p>Like before, we’ll build our querry. We’ll start with the 2011 LFS
+dataset. This is a multistep process, as the first thing we need to do
+is get the id for the dataset, which is different from the
+<code>global_id</code> we retrieved from the <code>search</code> api,
+but we need the <code>global_id</code>, piped into the
+<code>datasets</code> api, to get the id for the dataset.</p>
+<pre class="r"><code>id &lt;- lfs[lfs$name == &quot;Labour Force Survey, 2011&quot;, &quot;id&quot;, drop = TRUE] # we want a simple vector returned
+query &lt;- paste0(&quot;:persistentId/?persistentId=&quot;, id)
+(dataset_api_call &lt;- paste0(base_url, data_access_api, query))</code></pre>
+<pre><code>## [1] &quot;https://abacus.library.ubc.ca/api/datasets/:persistentId/?persistentId=hdl:11272.1/AB2/GK3SFF&quot;</code></pre>
+<p>Now we make the call and process the <code>body</code>.</p>
+<pre class="r"><code>dataset_id_resp &lt;- dataset_api_call |&gt;
+  httr2::request() |&gt;
+  httr2::req_perform()
+dataset_id_body &lt;- jsonlite::fromJSON(rawToChar(dataset_id_resp$body))</code></pre>
+<p>We can now use the <code>id</code> and the <code>versionNumber</code>
+to access a file list.</p>
+<p>First, build the query</p>
+<pre class="r"><code>dataset_id &lt;- dataset_id_body$data$id
+dataset_ver &lt;- dataset_id_body$data$latestVersion$versionNumber
+(file_list_query &lt;- paste0(base_url, data_access_api, dataset_id, &quot;/versions/&quot;, dataset_ver, &quot;/files/&quot;))</code></pre>
+<pre><code>## [1] &quot;https://abacus.library.ubc.ca/api/datasets/45508/versions/2/files/&quot;</code></pre>
+<p>Then execute, this time using the <code>httr2</code> option fro
+converting the body to an <code>R</code> object.</p>
+<pre class="r"><code>dataset_file_resp &lt;- file_list_query |&gt;
+  httr2::request() |&gt;
+  httr2::req_perform() |&gt;
+  httr2::resp_body_json()</code></pre>
+<p>All relevant data files have a <code>directoryLabel</code> equal to
+<code>Data</code>. We can use this to access only the data files.</p>
 </div>
 
 

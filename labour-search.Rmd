@@ -35,16 +35,13 @@ In either case, we start with the base url into the API, which we'll store in a 
 base_url <- "https://abacus.library.ubc.ca/api/"
 ```
 
-After loading the base url, we can add on the specific API we intend to search. We'll store these for later use as well.
+After loading the base url, we can add on the specific API we intend to search.
 
 ```{r, api-branch}
 search_api <- "search?q="
-data_access_api <- ""
 ```
 
 The `Search` API requires a `query` parameter, ie, something to search for. This is articulated as a string, folloing the `?q=`.
-
-The `Data Access` API requires... (haven't written anything to explore getting the data)
 
 ## Search API
 
@@ -54,7 +51,7 @@ For this demonstration, we'll focus on searching for datasets. We've already bui
 
 ```{r, query}
 search_query <- "title:labour" # retrieve everything with the word labour in the title
-search_type <- "&type=dataset&metadata_fields=Distribution%20Date:*" # limit to datasets
+search_type <- "&type=dataset" # limit to datasets
 ```
 
 We can then paste these together to construct a full query.
@@ -138,10 +135,10 @@ We're slowly wittling this down. This now looks almost identical to what we pull
 names(search_data$items)
 ```
 
-We don't need all this data. We should be able to do some evaluation with the `name`, `description`, `fileCount`, `producers`, `published_at` and, for later retrieval, `url`. Let's look at these quickly, noting importantly, that `producers` is another list, that we'll need to wrangle some how.
+We don't need all this data. We should be able to do some evaluation with the `name`, `description`, `fileCount`, `producers`, `published_at`, `url`, and, for later retrieval, `global_id`. Let's look at these quickly, noting importantly, that `producers` is another list, that we'll need to wrangle some how.
 
 ```{r, vars-of-interest}
-vars_of_interest <- c("name", "description", "fileCount", "producers", "published_at", "url")
+vars_of_interest <- c("name", "description", "fileCount", "producers", "published_at", "url", "global_id")
 lapply(search_data$items[vars_of_interest], class)
 ```
 
@@ -177,6 +174,7 @@ search_datasets <- function(query, per_page) {
   file_count <- vector()
   producers <- list()
   pub_date <- vector()
+  global_id <- vector()
   handle <- vector()
   
   # establish the starting point
@@ -196,7 +194,8 @@ search_datasets <- function(query, per_page) {
     resp_body_file_count <- resp_body$data$items$fileCount # get the file count
     resp_body_producers <- resp_body$data$items$producers # get the producers
     resp_body_handle <- resp_body$data$items$url #get the url
-    resp_body_pubdate <- resp_body$data$items$published_at
+    resp_body_id <- resp_body$data$items$global_id # get id
+    resp_body_pubdate <- resp_body$data$items$published_at # get update date
     # update the place holders:
     name <- c(name, resp_body_name)
     description <- c(description, resp_body_desc)
@@ -204,6 +203,7 @@ search_datasets <- function(query, per_page) {
     producers <- c(producers, resp_body_producers)
     pub_date <- c(pub_date, resp_body_pubdate)
     handle <- c(handle, resp_body_handle)
+    global_id <- c(global_id, resp_body_id)
     # update counters
     start_point <- start_point + per_page # increment the start_point
     call_counter <- call_counter + 1 # increment the counter
@@ -215,7 +215,8 @@ search_datasets <- function(query, per_page) {
                 "file_count" = file_count,
                 "producers" = producers,
                 "pub_date" = pub_date,
-                "handle" = handle))
+                "handle" = handle,
+                "id" = global_id))
 }
 ```
 
@@ -276,3 +277,51 @@ We only need the Labour Force Surveys themselves. These are occassionaly revised
 lfs <- labour[grepl("^Labour Force Survey", labour$name_no_year),]
 head(lfs)
 ```
+
+## Looking at Files
+
+We now know the data sets we're interested in. A dataset is made up of multiple files, however, and we likely don't want all the files. We'll start by getting the file list for one of our datasets.
+
+Up until now, we've been using the `search` api. We'll now use the `datasets` api.
+
+```{r}
+data_access_api <- "datasets/"
+```
+
+Like before, we'll build our querry. We'll start with the 2011 LFS dataset. This is a multistep process, as the first thing we need to do is get the id for the dataset, which is different from the `global_id` we retrieved from the `search` api, but we need the `global_id`, piped into the `datasets` api, to get the id for the dataset.
+
+```{r}
+id <- lfs[lfs$name == "Labour Force Survey, 2011", "id", drop = TRUE] # we want a simple vector returned
+query <- paste0(":persistentId/?persistentId=", id)
+(dataset_api_call <- paste0(base_url, data_access_api, query))
+```
+
+Now we make the call and process the `body`.
+
+```{r}
+dataset_id_resp <- dataset_api_call |>
+  httr2::request() |>
+  httr2::req_perform()
+dataset_id_body <- jsonlite::fromJSON(rawToChar(dataset_id_resp$body))
+```
+
+We can now use the `id` and the `versionNumber` to access a file list.
+
+First, build the query
+
+```{r}
+dataset_id <- dataset_id_body$data$id
+dataset_ver <- dataset_id_body$data$latestVersion$versionNumber
+(file_list_query <- paste0(base_url, data_access_api, dataset_id, "/versions/", dataset_ver, "/files/"))
+```
+
+Then execute, this time using the `httr2` option fro converting the body to an `R` object.
+
+```{r}
+dataset_file_resp <- file_list_query |>
+  httr2::request() |>
+  httr2::req_perform() |>
+  httr2::resp_body_json()
+```
+
+All relevant data files have a `directoryLabel` equal to `Data`. We can use this to access only the data files.
