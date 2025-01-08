@@ -1,7 +1,3 @@
-## Abacus API Workshop
+## Accessing the Abacus API with R
 
-**2024-12-09**
-
-Current `.Rmd` opens a connection, runs a full query, and pulls all data. We could surely do something more interesting!
-
-The pull is large, so that content is cached.
+Using Abacus, UBC's data repository, explore basic concepts of using R to search for and download data via an API. Using an API to access data provides a unique way to explore the repository and to script repetitive tasks. Topics covered will be applicable to other APIs. This workshop assumes some level of comfort with R for the purposes of data wrangling; code will be described in plain language to guide participants through the process, but this will not be a 'how to' wrangle data. 
