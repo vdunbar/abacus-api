@@ -1,13 +1,20 @@
 ---
 title: "Abacus API"
 subtitle: "Search & Data Access"
-author: "Mathew Vis-Dunbar"
-date: "2024-11-20"
-output: html_document
+author: "Mathew Vis-Dunbar & Nick Rochlin"
+date: "2025-02-14"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    theme: flatly
+    highlight: tango
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(kableExtra)
 ```
 
 ## Set up
@@ -126,6 +133,13 @@ summary(search_body_char)
 str(search_body_char)
 ```
 
+This looks a little friendlier with `cat()`
+
+```{r, eval = FALSE}
+# not executed
+cat(search_body_char)
+```
+
 Our next task then, is to convert this JSON notation to a suitable `R` data structure, in this case, a list. We'll do this with the `jsonlite` package.
 
 ```{r, json-list-conversion}
@@ -140,9 +154,15 @@ summary(search_body_list)
 
 The `data` list is what we want. We'll pull that out and then explore that list.
 
-```{r, data-isolation}
+```{r, data-isolation, results = 'hide'}
 search_data <- search_body_list$data
 summary(search_data)
+```
+
+```{r, echo = FALSE}
+summary(search_data) |>
+  kbl() |>
+  kable_styling(bootstrap_options = "striped")
 ```
 
 We're slowly whittling this down. This now looks almost identical to what we pulled up in our browser earlier. The actual relevant content is in the `items` list. But we'll also need the `total_count` for when we need to request all the data from the server in a loop. For now, let's look at the 26 items in there.
@@ -253,8 +273,14 @@ labour <- search_datasets("title:labour", 50)
 
 We now have record data that we can explore.
 
-```{r, summary-labour-datasets}
+```{r, summary-labour-datasets, results = 'hide'}
 summary(labour)
+```
+
+```{r, echo = FALSE}
+summary(labour) |>
+  kbl() |>
+  kable_styling(bootstrap_options = "striped")
 ```
 
 We can make this a bit easier for ourselves by converting this into a dataframe or tibble. There are several ways to approach this, considering that `producers` is a list -- it is a list as some records have more than one producer associated them. Here, I'll treat datasets with multiple producers as a different record authority than if one of these co-producers produced a standalone dataset. To do this, we'll first collapse the `producers` nested lists, and then flatten the result into a single list.
@@ -269,9 +295,18 @@ head(labour$producers, n = 20)
 
 We can easily convert this to a dataframe now.
 
-```{r, labour-datasets-df-2}
+```{r, labour-datasets-df-2, results = 'hide'}
 labour <- as.data.frame(labour)
 head(labour)
+```
+
+```{r, echo = FALSE}
+labour_trun <- labour
+labour_trun$description <- substr(labour_trun$description, start = 1, stop = 44)
+labour_trun$description <- paste0(labour_trun$description, "...")
+head(labour_trun) |>
+  kbl() |>
+  kable_styling(bootstrap_options = "striped")
 ```
 
 ## Explore
@@ -298,9 +333,18 @@ And then look at the unique values:
 
 We only need the Labour Force Surveys themselves. These are occasionally revised, [documentation on these revisions here](https://www150.statcan.gc.ca/n1/pub/71f0031x/71f0031x2023001-eng.htm), hence multiple records with slightly modified names (Labour Force Survey, Labour Force Survey (Rebased, Revised), etc)
 
-```{r, lfs-subset}
+```{r, lfs-subset, results = 'hide'}
 lfs <- labour[grepl("^Labour Force Survey", labour$name_no_year),] # regex to find names starting with LFS
 head(lfs)
+```
+
+```{r, echo = FALSE}
+lfs_trun <- lfs
+lfs_trun$description <- substr(lfs_trun$description, start = 1, stop = 44)
+lfs_trun$description <- paste0(lfs_trun$description, "...")
+head(lfs_trun) |>
+  kbl() |>
+  kable_styling(bootstrap_options = "striped")
 ```
 
 ## Looking at Files
@@ -390,5 +434,7 @@ And build an annual set
 ```{r, import-rbind}
 lfs_2011_list <- lapply(list.files(dest_dir), function(x) read.delim(file = paste0(dest_dir, x))) # read in each tab file into a list
 lfs_2011_df <- do.call(rbind, lfs_2011_list) # bind the list items into a df
-summary(lfs_2011_df)
+summary(lfs_2011_df[, c(1:11)]) |>
+  kbl() |>
+  kable_styling(bootstrap_options = "striped")
 ```
