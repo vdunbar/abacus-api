@@ -1800,6 +1800,26 @@ border-radius: 0px;
 </div>
 
 
+<div id="definitions" class="section level2">
+<h2>Definitions</h2>
+<p><strong>API</strong></p>
+<p>An application programming interface (API) is a formalized way of
+interacting with another piece of hardware or software without needing
+to know how that hardware or software actually works. As such, it is a
+convenient method of making requests to get, update, or push information
+between your system and the remote system. As a loose analogy, you can
+think of this as a menu in a resuraunt; you don’t need to know how the
+kitchen makes your food, but you need to know what you can ask for from
+your server. When you want scrambled eggs, you don’t need to go into the
+kitchen and make these from scratch, you simply put in a request based
+on the options on the menu.</p>
+<p><strong>JSON</strong></p>
+<p>JavaScript Object Notation (JSON) is a method for storing and
+transmitting data primarily using key value pairs. It is compact,
+flexible, human readable, and works well in a Web based environment. It
+is generally the default format in which data is transmitted from an
+API.</p>
+</div>
 <div id="set-up" class="section level2">
 <h2>Set up</h2>
 <p>The Abacus API is accessible through http, which means we can access
@@ -1913,7 +1933,7 @@ as a list.</p>
 ##  $ url        : chr &quot;https://abacus.library.ubc.ca/api/search?q=title:labour&amp;type=dataset&quot;
 ##  $ status_code: int 200
 ##  $ headers    :List of 8
-##   ..$ Date                        : chr &quot;Thu, 23 Jan 2025 21:56:30 GMT&quot;
+##   ..$ Date                        : chr &quot;Thu, 30 Jan 2025 20:18:08 GMT&quot;
 ##   ..$ Server                      : chr &quot;Apache/2.4.37 (Red Hat Enterprise Linux) OpenSSL/1.1.1k mod_R/1.2.9 R/3.5.0 mod_apreq2-20101207/2.8.1&quot;
 ##   ..$ X-Frame-Options             : chr &quot;SAMEORIGIN&quot;
 ##   ..$ Access-Control-Allow-Origin : chr &quot;*&quot;
@@ -1932,7 +1952,7 @@ as a list.</p>
 ##   ..$ options : list()
 ##   ..$ policies: list()
 ##   ..- attr(*, &quot;class&quot;)= chr &quot;httr2_request&quot;
-##  $ cache      :&lt;environment: 0x117310638&gt; 
+##  $ cache      :&lt;environment: 0x12ab00c28&gt; 
 ##  - attr(*, &quot;class&quot;)= chr &quot;httr2_response&quot;</code></pre>
 <p>What we’re most interested in here is the <code>body</code>. However,
 the <code>body</code> is sent to us structured as json and in raw bytes.
@@ -2887,23 +2907,23 @@ relevant data files have a <code>directoryLabel</code> equal to
 to us. Let’s grab just the <code>.tab</code> files.</p>
 <div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" tabindex="-1"></a>relevant_data_files <span class="ot">&lt;-</span> <span class="fu">Filter</span>(<span class="cf">function</span>(x) <span class="fu">grepl</span>(<span class="st">&quot;tab$&quot;</span>, x<span class="sc">$</span>label), data_files) <span class="co"># filter to files ending in tab</span></span></code></pre></div>
 <p>And then download them.</p>
-<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">&quot;LFS_2011&quot;</span>) <span class="co"># create a directory</span></span></code></pre></div>
-<pre><code>## Warning in dir.create(&quot;LFS_2011&quot;): &#39;LFS_2011&#39; already exists</code></pre>
-<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" tabindex="-1"></a>dest_dir <span class="ot">&lt;-</span> <span class="st">&quot;LFS_2011/&quot;</span> <span class="co"># store it in a variable</span></span>
-<span id="cb58-2"><a href="#cb58-2" tabindex="-1"></a></span>
-<span id="cb58-3"><a href="#cb58-3" tabindex="-1"></a><span class="co"># loop through the files and download them</span></span>
-<span id="cb58-4"><a href="#cb58-4" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(relevant_data_files)){</span>
-<span id="cb58-5"><a href="#cb58-5" tabindex="-1"></a>  file_name <span class="ot">&lt;-</span> relevant_data_files[[i]]<span class="sc">$</span>label</span>
-<span id="cb58-6"><a href="#cb58-6" tabindex="-1"></a>  file_id <span class="ot">&lt;-</span> relevant_data_files[[i]]<span class="sc">$</span>dataFile<span class="sc">$</span>id</span>
-<span id="cb58-7"><a href="#cb58-7" tabindex="-1"></a>  url_root <span class="ot">&lt;-</span> <span class="st">&quot;https://abacus.library.ubc.ca/api/access/datafile/&quot;</span></span>
-<span id="cb58-8"><a href="#cb58-8" tabindex="-1"></a>  <span class="fu">download.file</span>(<span class="at">url =</span> <span class="fu">paste0</span>(url_root, file_id), <span class="at">destfile =</span> <span class="fu">paste0</span>(dest_dir, file_name))</span>
-<span id="cb58-9"><a href="#cb58-9" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">&quot;LFS_2011&quot;</span>) <span class="co"># create a directory</span></span>
+<span id="cb56-2"><a href="#cb56-2" tabindex="-1"></a></span>
+<span id="cb56-3"><a href="#cb56-3" tabindex="-1"></a>dest_dir <span class="ot">&lt;-</span> <span class="st">&quot;LFS_2011/&quot;</span> <span class="co"># store it in a variable</span></span>
+<span id="cb56-4"><a href="#cb56-4" tabindex="-1"></a></span>
+<span id="cb56-5"><a href="#cb56-5" tabindex="-1"></a><span class="co"># loop through the files and download them</span></span>
+<span id="cb56-6"><a href="#cb56-6" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(relevant_data_files)){</span>
+<span id="cb56-7"><a href="#cb56-7" tabindex="-1"></a>  file_name <span class="ot">&lt;-</span> relevant_data_files[[i]]<span class="sc">$</span>label</span>
+<span id="cb56-8"><a href="#cb56-8" tabindex="-1"></a>  file_id <span class="ot">&lt;-</span> relevant_data_files[[i]]<span class="sc">$</span>dataFile<span class="sc">$</span>id</span>
+<span id="cb56-9"><a href="#cb56-9" tabindex="-1"></a>  url_root <span class="ot">&lt;-</span> <span class="st">&quot;https://abacus.library.ubc.ca/api/access/datafile/&quot;</span></span>
+<span id="cb56-10"><a href="#cb56-10" tabindex="-1"></a>  <span class="fu">download.file</span>(<span class="at">url =</span> <span class="fu">paste0</span>(url_root, file_id), <span class="at">destfile =</span> <span class="fu">paste0</span>(dest_dir, file_name))</span>
+<span id="cb56-11"><a href="#cb56-11" tabindex="-1"></a>}</span></code></pre></div>
 <p>And build an annual set</p>
-<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" tabindex="-1"></a>lfs_2011_list <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">list.files</span>(dest_dir), <span class="cf">function</span>(x) <span class="fu">read.delim</span>(<span class="at">file =</span> <span class="fu">paste0</span>(dest_dir, x))) <span class="co"># read in each tab file into a list</span></span>
-<span id="cb59-2"><a href="#cb59-2" tabindex="-1"></a>lfs_2011_df <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, lfs_2011_list) <span class="co"># bind the list items into a df</span></span>
-<span id="cb59-3"><a href="#cb59-3" tabindex="-1"></a><span class="fu">summary</span>(lfs_2011_df[, <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">11</span>)]) <span class="sc">|&gt;</span></span>
-<span id="cb59-4"><a href="#cb59-4" tabindex="-1"></a>  <span class="fu">kbl</span>() <span class="sc">|&gt;</span></span>
-<span id="cb59-5"><a href="#cb59-5" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="st">&quot;striped&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" tabindex="-1"></a>lfs_2011_list <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">list.files</span>(dest_dir), <span class="cf">function</span>(x) <span class="fu">read.delim</span>(<span class="at">file =</span> <span class="fu">paste0</span>(dest_dir, x))) <span class="co"># read in each tab file into a list</span></span>
+<span id="cb57-2"><a href="#cb57-2" tabindex="-1"></a>lfs_2011_df <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, lfs_2011_list) <span class="co"># bind the list items into a df</span></span>
+<span id="cb57-3"><a href="#cb57-3" tabindex="-1"></a><span class="fu">summary</span>(lfs_2011_df[, <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">11</span>)]) <span class="sc">|&gt;</span></span>
+<span id="cb57-4"><a href="#cb57-4" tabindex="-1"></a>  <span class="fu">kbl</span>() <span class="sc">|&gt;</span></span>
+<span id="cb57-5"><a href="#cb57-5" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="st">&quot;striped&quot;</span>)</span></code></pre></div>
 <table class="table table-striped" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>

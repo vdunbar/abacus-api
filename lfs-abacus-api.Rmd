@@ -17,6 +17,16 @@ knitr::opts_chunk$set(echo = TRUE)
 library(kableExtra)
 ```
 
+## Definitions
+
+**API**
+
+An application programming interface (API) is a formalized way of interacting with another piece of hardware or software without needing to know how that hardware or software actually works. As such, it is a convenient method of making requests to get, update, or push information between your system and the remote system. As a loose analogy, you can think of this as a menu in a resuraunt; you don't need to know how the kitchen makes your food, but you need to know what you can ask for from your server. When you want scrambled eggs, you don't need to go into the kitchen and make these from scratch, you simply put in a request based on the options on the menu.
+
+**JSON**
+
+JavaScript Object Notation (JSON) is a method for storing and transmitting data primarily using key value pairs. It is compact, flexible, human readable, and works well in a Web based environment. It is generally the default format in which data is transmitted from an API.
+
 ## Set up
 
 The Abacus API is accessible through http, which means we can access the API using any http compliant tool, including a web browser.
@@ -415,7 +425,7 @@ relevant_data_files <- Filter(function(x) grepl("tab$", x$label), data_files) # 
 
 And then download them.
 
-```{r, download}
+```{r, download, eval = FALSE}
 dir.create("LFS_2011") # create a directory
 
 dest_dir <- "LFS_2011/" # store it in a variable
@@ -427,6 +437,10 @@ for(i in 1:length(relevant_data_files)){
   url_root <- "https://abacus.library.ubc.ca/api/access/datafile/"
   download.file(url = paste0(url_root, file_id), destfile = paste0(dest_dir, file_name))
 }
+```
+
+```{r, echo = FALSE, result = 'hide'}
+dest_dir <- "LFS_2011/" # store it in a variable
 ```
 
 And build an annual set
